@@ -1,40 +1,63 @@
 import { z } from "zod";
-
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-
-let post = {
-  id: 1,
-  name: "Hello World",
-};
+import { db } from "~/server/firebase/firebase-admin";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
+  // Existing create method
+  create: protectedProcedure
+    .input(z.object({ msg: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const post = {
+        userId: ctx.session.user.id, // Assuming the session includes user ID
+        userName: ctx.session.user.name,
+        msg: input.msg,
+        createdAt: new Date(), // Firebase Admin SDK uses Date objects
+      };
+
+      const docRef = await db.collection("posts").add(post);
+
       return {
-        greeting: `Hello ${input.text}`,
+        id: docRef.id,
+        ...post,
       };
     }),
 
-  create: protectedProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      post = { id: post.id + 1, name: input.name };
-      return post;
+  // Get a single post
+  get: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const docRef = db.collection("posts").doc(input.id);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        throw new Error("Post not found");
+      }
+      return { id: doc.id, ...doc.data() };
     }),
 
-  getLatest: protectedProcedure.query(() => {
-    return post;
-  }),
+  // Update a post
+  update: protectedProcedure
+    .input(z.object({ id: z.string(), msg: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const docRef = db.collection("posts").doc(input.id);
+      await docRef.update({ msg: input.msg });
+      return { id: input.id, msg: input.msg, userName: ctx.session.user.name };
+    }),
 
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  // Delete a post
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await db.collection("posts").doc(input.id).delete();
+      return { id: input.id };
+    }),
+
+  getAll: publicProcedure.query(async () => {
+    const snapshot = await db.collection("posts").get();
+    const posts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return posts;
   }),
 });
