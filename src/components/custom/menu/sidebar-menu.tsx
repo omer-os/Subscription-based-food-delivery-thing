@@ -1,5 +1,13 @@
 "use client";
-import { Box, DollarSign, Dot, LayoutDashboard, User } from "lucide-react";
+import {
+  Box,
+  BoxSelect,
+  DollarSign,
+  Dot,
+  LayoutDashboard,
+  Sun,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -40,14 +48,14 @@ export default function SidebarMenu() {
             link: "/subscriptions",
           },
           {
-            title: "Reports",
-            icon: Dot,
-            link: "/reports",
+            title: "Days",
+            icon: Sun,
+            link: "/days",
           },
           {
-            title: "Settings",
-            icon: Dot,
-            link: "/settings",
+            title: "foods",
+            icon: BoxSelect,
+            link: "/foods",
           },
         ].map((item, index) => (
           <Link
