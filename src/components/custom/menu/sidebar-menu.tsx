@@ -1,5 +1,5 @@
 "use client";
-import { Dot, LayoutDashboard, User } from "lucide-react";
+import { Box, DollarSign, Dot, LayoutDashboard, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -13,7 +13,7 @@ export default function SidebarMenu() {
 
   return (
     <div>
-      <div className="text-muted-foreground text-sm font-semibold">
+      <div className="text-sm font-semibold text-muted-foreground">
         overview
       </div>
 
@@ -30,14 +30,14 @@ export default function SidebarMenu() {
             link: "/users",
           },
           {
-            title: "Products",
-            icon: Dot,
-            link: "/products",
+            title: "Meals",
+            icon: Box,
+            link: "/meals",
           },
           {
-            title: "Customers",
-            icon: Dot,
-            link: "/customers",
+            title: "Subscriptions",
+            icon: DollarSign,
+            link: "/subscriptions",
           },
           {
             title: "Reports",
@@ -54,7 +54,7 @@ export default function SidebarMenu() {
             key={index}
             href={item.link}
             className={cn(
-              "hover:bg-muted bg-muted/0 flex cursor-pointer items-center gap-4 rounded-md p-2 transition-all",
+              "flex cursor-pointer items-center gap-4 rounded-md bg-muted/0 p-2 transition-all hover:bg-muted",
               {
                 "bg-muted": "/" + pathnameFirstItem === item.link,
               },
