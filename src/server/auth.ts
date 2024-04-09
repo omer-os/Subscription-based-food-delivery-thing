@@ -1,4 +1,5 @@
 import {
+  AuthOptions,
   getServerSession,
   type DefaultSession,
   type NextAuthOptions,
@@ -10,12 +11,6 @@ import { cert } from "firebase-admin/app";
 import { env } from "~/env";
 import { db } from "./firebase/firebase-admin";
 
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -31,6 +26,13 @@ declare module "next-auth" {
   // }
 }
 
+export const AuthProviders: AuthOptions["providers"] = [
+  DiscordProvider({
+    clientId: env.DISCORD_CLIENT_ID,
+    clientSecret: env.DISCORD_CLIENT_SECRET,
+  }),
+];
+
 export const authOptions: NextAuthOptions = {
   callbacks: {
     session: ({ session, user }) => {
@@ -45,14 +47,14 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
-  providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
-  ],
+  providers: AuthProviders,
 
   adapter: FirestoreAdapter(db),
+
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+  },
 };
 
 export const getServerAuthSession = () => getServerSession(authOptions);
